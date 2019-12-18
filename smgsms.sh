@@ -24,7 +24,7 @@ stop() {
   fi
   echo 'stopping service…' >&2
   kill -15 $(cat "$pidfile") && rm -f "$pidfile"
-  echo 'Service stopped' >&2
+  echo 'service stopped' >&2
 }
 
 uninstall() {
