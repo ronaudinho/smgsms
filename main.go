@@ -1,14 +1,11 @@
 package main
 
 import (
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
-	"time"
 
-	"github.com/faiface/beep"
-	"github.com/faiface/beep/mp3"
-	"github.com/faiface/beep/speaker"
 	"github.com/gorilla/handlers"
 	"github.com/julienschmidt/httprouter"
 )
@@ -16,36 +13,24 @@ import (
 func main() {
 	router := httprouter.New()
 	router.GET("/", func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-		f, err := os.Open("smgsms.mp3")
+		b, err := ioutil.ReadFile("smgsms.mp3")
 		if err != nil {
-			log.Println(err)
-
 			w.WriteHeader(http.StatusInternalServerError)
-			return
+			w.Write([]byte(err.Error()))
 		}
 
-		streamer, format, err := mp3.Decode(f)
-		if err != nil {
-			log.Println(err)
-
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-
-		defer streamer.Close()
-		speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/10))
-		done := make(chan bool)
-		speaker.Play(beep.Seq(streamer, beep.Callback(func() {
-			done <- true
-		})))
-		<-done
+		w.Header().Set("Content-Type", "audio/mpeg")
+		w.Write(b)
 
 		return
+	})
+	router.GET("/good", func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+		w.Write([]byte("GOOD"))
 	})
 
 	handler := handlers.CombinedLoggingHandler(os.Stdout, router)
 	handler = handlers.RecoveryHandler()(router)
 
-	log.Println("Serving :3195")
-	log.Fatal(http.ListenAndServe(":3195", handler))
+	log.Println("Serving :49389")
+	log.Fatal(http.ListenAndServe(":49389", handler))
 }
